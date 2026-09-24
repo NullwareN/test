@@ -1,0 +1,12 @@
+<Tab name="Skinchanger" padding="4 4 4 4">
+    <Box padding="12 6 6 6" width="content" height="content" name="Skinchanger">
+        <List width="220">
+            <AutoVariable width="fill" target="skinchanger.enable" label="Enable skinchanger"/>
+            <AutoVariable width="fill" target="skinchanger.reskin" label="Reskin stock weapons" tooltip="Rewrites stock weapon defids to their decorated variants."/>
+            <AutoVariable width="fill" target="skinchanger.debug" label="Debug info" tooltip="Shows defindex and attribute list of the active weapon on screen."/>
+        </List>
+    </Box>
+    <Box padding="12 6 6 6" width="content" height="content" name="Weapon skin" x="245">
+        <List id="skinchanger-controls" width="280"/>
+    </Box>
+</Tab>

@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+if [ "$EUID" == 0 ]; then
+    echo "This script must not be run as root"
+    exit 1
+fi
+
+line=$(pgrep -x tf_linux64 || true)
+if [ -n "$line" ]; then
+    echo "TF2 already running!"
+    exit 1
+fi
+
+if ! pgrep -x steam >/dev/null; then
+    echo "Steam not running! Starting it."
+    steam > /dev/null 2>&1 &
+    sleep 30
+    echo "Done starting Steam"
+fi
+
+LIB="$(dirname "$(realpath "$0")")/build/bin/libcathook.so"
+if [ ! -f "$LIB" ]; then
+    echo "Missing $LIB — build first" >&2
+    exit 1
+fi
+
+FILENAME="/tmp/.gl$(head /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 6)"
+cp "$LIB" "$FILENAME"
+chmod 0755 "$FILENAME"
+
+echo "Preloading libcathook as $FILENAME!"
+if [ -z "$TF2_PATH" ]; then
+    for candidate in \
+        "/run/media/sex/tf/SteamLibrary/steamapps/common/Team Fortress 2" \
+        "$HOME/.steam/steam/steamapps/common/Team Fortress 2" \
+        "$HOME/.local/share/Steam/steamapps/common/Team Fortress 2"
+    do
+        if [ -x "$candidate/tf_linux64" ]; then
+            TF2_PATH="$candidate"
+            break
+        fi
+    done
+fi
+TF2_PATH="$(realpath "$TF2_PATH")"
+
+GAME_LIBRARY_PATH="./bin:./bin/linux64:./tf/bin:./tf/bin/linux64:./platform:./platform/bin:./platform/bin/linux64:."
+
+pushd "$TF2_PATH" >/dev/null
+SteamAppId=440 SteamGameId=440 SteamOverlayGameId=440 SteamEnv=1 \
+    LD_PRELOAD="$FILENAME" \
+    LD_LIBRARY_PATH="$GAME_LIBRARY_PATH" \
+    ./tf_linux64 -steam -game tf -sw -w 1280 -h 720 -novid -nomouse -insecure >/dev/null 2>&1 &
+echo "Game preloading!"
+popd >/dev/null
+sleep 10
+rm -f "$FILENAME"
