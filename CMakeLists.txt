@@ -184,16 +184,36 @@ add_custom_target(data
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
         VERBATIM)
 
-set(TF2_LINUX64_DIR "/run/media/sex/tf/SteamLibrary/steamapps/common/Team Fortress 2/bin/linux64" CACHE PATH "TF2 linux64 binary directory for libtier0/libvstdlib")
+set(TF2_LINUX64_DIR "" CACHE PATH "TF2 linux64 binary directory for libtier0/libvstdlib")
 if(NOT EXISTS "${TF2_LINUX64_DIR}/libtier0.so")
-    foreach(_tf2_candidate
-            "/run/media/sex/tf/SteamLibrary/steamapps/common/Team Fortress 2/bin/linux64"
-            "/run/media/sex/Nowy/SteamLibrary/steamapps/common/Team Fortress 2/bin/linux64"
-            "$ENV{HOME}/.local/share/Steam/steamapps/common/Team Fortress 2/bin/linux64"
-            "$ENV{HOME}/.steam/steam/steamapps/common/Team Fortress 2/bin/linux64"
-            "$ENV{HOME}/.steam/root/steamapps/common/Team Fortress 2/bin/linux64"
-            "$ENV{HOME}/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps/common/Team Fortress 2/bin/linux64"
-            "$ENV{HOME}/.var/app/com.valvesoftware.Steam/.steam/steam/steamapps/common/Team Fortress 2/bin/linux64")
+    set(_search_homes "$ENV{HOME}")
+    if(DEFINED ENV{SUDO_USER})
+        list(APPEND _search_homes "/home/$ENV{SUDO_USER}")
+    endif()
+    file(GLOB _all_user_homes "/home/*")
+    list(APPEND _search_homes ${_all_user_homes})
+    list(REMOVE_DUPLICATES _search_homes)
+
+    set(_tf2_candidates)
+    foreach(_h IN LISTS _search_homes)
+        list(APPEND _tf2_candidates
+            "${_h}/.local/share/Steam/steamapps/common/Team Fortress 2/bin/linux64"
+            "${_h}/.steam/steam/steamapps/common/Team Fortress 2/bin/linux64"
+            "${_h}/.steam/root/steamapps/common/Team Fortress 2/bin/linux64"
+            "${_h}/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps/common/Team Fortress 2/bin/linux64"
+            "${_h}/.var/app/com.valvesoftware.Steam/.steam/steam/steamapps/common/Team Fortress 2/bin/linux64"
+        )
+    endforeach()
+
+    file(GLOB _media_candidates
+        "/run/media/*/*/SteamLibrary/steamapps/common/Team Fortress 2/bin/linux64"
+        "/run/media/*/*/*/SteamLibrary/steamapps/common/Team Fortress 2/bin/linux64"
+        "/mnt/*/*/SteamLibrary/steamapps/common/Team Fortress 2/bin/linux64"
+        "/mnt/*/SteamLibrary/steamapps/common/Team Fortress 2/bin/linux64"
+    )
+    list(APPEND _tf2_candidates ${_media_candidates})
+
+    foreach(_tf2_candidate IN LISTS _tf2_candidates)
         if(EXISTS "${_tf2_candidate}/libtier0.so")
             set(TF2_LINUX64_DIR "${_tf2_candidate}" CACHE PATH "TF2 linux64 binary directory for libtier0/libvstdlib" FORCE)
             break()
