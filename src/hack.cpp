@@ -488,11 +488,9 @@ free(logname);*/
             std::ifstream exists(paths::getDataPath("/" + s), std::ios::in);
             if (not exists)
             {
-                Error(("Missing essential file: " + s +
-                       "/%s\nYou MUST run install-data script to finish "
-                       "installation")
-                          .c_str(),
-                      s.c_str());
+                std::string resolved = paths::getDataPath("/" + s);
+                Error("Missing essential file: %s\nLooked in: %s\nYou MUST run install-data script to finish installation",
+                      s.c_str(), resolved.c_str());
             }
         }
     }

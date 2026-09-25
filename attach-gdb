@@ -18,7 +18,9 @@ fi
 echo "Running instances:" "${arr[@]}"
 echo "Attaching to $proc"
 
-LIB="$(dirname "$(realpath "$0")")/build/bin/libcathook.so"
+ROOT_DIR="$(dirname "$(realpath "$0")")"
+LIB="$ROOT_DIR/build/bin/libcathook.so"
+DATA_DIR="$ROOT_DIR/data"
 if [ ! -f "$LIB" ]; then
     echo "Missing $LIB — build first" >&2
     exit 1
@@ -31,6 +33,7 @@ chmod 0755 "$FILENAME"
 echo "Loading $FILENAME into $proc"
 gdb -n -q -batch                                                      \
     -ex "attach $proc"                                                \
+    -ex "call ((int(*)(const char*, const char*, int))setenv)(\"CH_DATA_PATH\", \"$DATA_DIR\", 0)" \
     -ex "echo \033[1mCalling dlopen\033[0m\n"                         \
     -ex "call ((void*(*)(const char*, int))dlopen)(\"$FILENAME\", 1)" \
     -ex "echo \033[1mCalling dlerror\033[0m\n"                        \

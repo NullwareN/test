@@ -21,4 +21,4 @@ cmake -DVisuals_DrawType="$visuals_draw_type" ..
 cmake --build . --target cathook -- -j"$proccount"
 popd >/dev/null
 
-./install-data
+bash ./install-data
