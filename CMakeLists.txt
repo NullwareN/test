@@ -1,9 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
 
-if(POLICY CMP0167)
-    cmake_policy(SET CMP0167 NEW)
-endif()
-
 set(NativePrecompiledHeaders 1)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -188,85 +184,23 @@ add_custom_target(data
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
         VERBATIM)
 
-set(TF2_LINUX64_DIR "" CACHE PATH "TF2 linux64 binary directory for libtier0/libvstdlib")
+set(TF2_LINUX64_DIR "/run/media/sex/tf/SteamLibrary/steamapps/common/Team Fortress 2/bin/linux64" CACHE PATH "TF2 linux64 binary directory for libtier0/libvstdlib")
 if(NOT EXISTS "${TF2_LINUX64_DIR}/libtier0.so")
-    set(_tf2_candidates)
-
-    if(DEFINED ENV{TF2_LINUX64_DIR} AND EXISTS "$ENV{TF2_LINUX64_DIR}/libtier0.so")
-        list(APPEND _tf2_candidates "$ENV{TF2_LINUX64_DIR}")
-    endif()
-
-    # Standard Steam installation directories
-    list(APPEND _tf2_candidates
+    foreach(_tf2_candidate
+            "/run/media/sex/tf/SteamLibrary/steamapps/common/Team Fortress 2/bin/linux64"
+            "/run/media/sex/Nowy/SteamLibrary/steamapps/common/Team Fortress 2/bin/linux64"
             "$ENV{HOME}/.local/share/Steam/steamapps/common/Team Fortress 2/bin/linux64"
-            "$ENV{HOME}/.steam/steam/steamapps/common/Team Fortress 2/bin/linux64"
-            "$ENV{HOME}/.steam/root/steamapps/common/Team Fortress 2/bin/linux64"
-            "$ENV{HOME}/.steam/debian-installation/steamapps/common/Team Fortress 2/bin/linux64"
-            "$ENV{HOME}/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps/common/Team Fortress 2/bin/linux64"
-            "$ENV{HOME}/.var/app/com.valvesoftware.Steam/.steam/steam/steamapps/common/Team Fortress 2/bin/linux64"
-            "$ENV{HOME}/.var/app/com.valvesoftware.Steam/.steam/root/steamapps/common/Team Fortress 2/bin/linux64"
-            "$ENV{HOME}/.var/app/com.valvesoftware.Steam/data/Steam/steamapps/common/Team Fortress 2/bin/linux64"
-            "/var/lib/flatpak/app/com.valvesoftware.Steam/current/active/export/share/steamapps/common/Team Fortress 2/bin/linux64")
-
-    # Search Steam libraryfolders.vdf for any additional library paths
-    foreach(_vdf
-            "$ENV{HOME}/.local/share/Steam/steamapps/libraryfolders.vdf"
-            "$ENV{HOME}/.steam/steam/steamapps/libraryfolders.vdf"
-            "$ENV{HOME}/.steam/root/steamapps/libraryfolders.vdf"
-            "$ENV{HOME}/.steam/debian-installation/steamapps/libraryfolders.vdf"
-            "$ENV{HOME}/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps/libraryfolders.vdf"
-            "$ENV{HOME}/.var/app/com.valvesoftware.Steam/data/Steam/steamapps/libraryfolders.vdf")
-        if(EXISTS "${_vdf}")
-            file(STRINGS "${_vdf}" _vdf_lines REGEX "\"path\"")
-            foreach(_vdf_line ${_vdf_lines})
-                if(_vdf_line MATCHES "\"path\"[ \t]+\"([^\"]+)\"")
-                    set(_steam_lib "${CMAKE_MATCH_1}")
-                    list(APPEND _tf2_candidates
-                            "${_steam_lib}/steamapps/common/Team Fortress 2/bin/linux64"
-                            "${_steam_lib}/common/Team Fortress 2/bin/linux64")
-                endif()
-            endforeach()
-        endif()
-    endforeach()
-
-    # Search common mount points
-    file(GLOB _glob_candidates
-            "/run/media/*/*/SteamLibrary/steamapps/common/Team Fortress 2/bin/linux64"
-            "/run/media/*/*/steamapps/common/Team Fortress 2/bin/linux64"
-            "/run/media/*/*/*/SteamLibrary/steamapps/common/Team Fortress 2/bin/linux64"
-            "/mnt/*/*/SteamLibrary/steamapps/common/Team Fortress 2/bin/linux64"
-            "/mnt/*/*/steamapps/common/Team Fortress 2/bin/linux64"
-            "/mnt/*/SteamLibrary/steamapps/common/Team Fortress 2/bin/linux64"
-            "/mnt/*/steamapps/common/Team Fortress 2/bin/linux64"
-            "/media/*/*/SteamLibrary/steamapps/common/Team Fortress 2/bin/linux64"
-            "/media/*/*/steamapps/common/Team Fortress 2/bin/linux64"
-            "$ENV{HOME}/*/SteamLibrary/steamapps/common/Team Fortress 2/bin/linux64"
-            "$ENV{HOME}/*/steamapps/common/Team Fortress 2/bin/linux64")
-    list(APPEND _tf2_candidates ${_glob_candidates})
-
-    foreach(_candidate ${_tf2_candidates})
-        if(EXISTS "${_candidate}/libtier0.so")
-            set(TF2_LINUX64_DIR "${_candidate}" CACHE PATH "TF2 linux64 binary directory for libtier0/libvstdlib" FORCE)
+            "$ENV{HOME}/.steam/steam/steamapps/common/Team Fortress 2/bin/linux64")
+        if(EXISTS "${_tf2_candidate}/libtier0.so")
+            set(TF2_LINUX64_DIR "${_tf2_candidate}" CACHE PATH "TF2 linux64 binary directory for libtier0/libvstdlib" FORCE)
             break()
         endif()
     endforeach()
 endif()
-
-if(EXISTS "${TF2_LINUX64_DIR}/libtier0.so")
-    message(STATUS "Found TF2 linux64 binaries at ${TF2_LINUX64_DIR}")
-    target_link_directories(cathook PRIVATE "${TF2_LINUX64_DIR}")
-else()
-    message(WARNING "TF2 linux64 binaries not found (libtier0.so). Generating stub tier0 and vstdlib libraries so cathook can compile. (You can also set -DTF2_LINUX64_DIR=<path>)")
-    set(TF2_STUB_DIR "${CMAKE_BINARY_DIR}/tf2_stubs")
-    file(MAKE_DIRECTORY "${TF2_STUB_DIR}")
-    if(NOT EXISTS "${TF2_STUB_DIR}/stub.c")
-        file(WRITE "${TF2_STUB_DIR}/stub.c" "void cathook_tf2_stub(void) {}\n")
-    endif()
-    add_library(tier0 SHARED "${TF2_STUB_DIR}/stub.c")
-    add_library(vstdlib SHARED "${TF2_STUB_DIR}/stub.c")
-    set_target_properties(tier0 PROPERTIES OUTPUT_NAME "tier0")
-    set_target_properties(vstdlib PROPERTIES OUTPUT_NAME "vstdlib")
+if(NOT EXISTS "${TF2_LINUX64_DIR}/libtier0.so")
+    message(FATAL_ERROR "TF2 linux64 binaries not found (libtier0.so). Set TF2_LINUX64_DIR.")
 endif()
+target_link_directories(cathook PRIVATE "${TF2_LINUX64_DIR}")
 target_link_libraries(cathook
         "${CMAKE_SOURCE_DIR}/libs/funchook/libfunchook.a"
         "${CMAKE_SOURCE_DIR}/libs/funchook/libdistorm.a"
