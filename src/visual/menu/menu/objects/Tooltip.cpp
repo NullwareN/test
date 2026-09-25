@@ -7,7 +7,7 @@
 
 namespace zerokernel_tooltip
 {
-static settings::RVariable<rgba_t> color_background{ "zk.style.tooltip.background", "1d2f40" };
+static settings::RVariable<rgba_t> color_background{ "zk.style.tooltip.background", "000000ff" };
 static settings::RVariable<rgba_t> color_border{ "zk.style.tooltip.border", "446498ff" };
 } // namespace zerokernel_tooltip
 namespace zerokernel

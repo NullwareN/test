@@ -190,7 +190,10 @@ if(NOT EXISTS "${TF2_LINUX64_DIR}/libtier0.so")
             "/run/media/sex/tf/SteamLibrary/steamapps/common/Team Fortress 2/bin/linux64"
             "/run/media/sex/Nowy/SteamLibrary/steamapps/common/Team Fortress 2/bin/linux64"
             "$ENV{HOME}/.local/share/Steam/steamapps/common/Team Fortress 2/bin/linux64"
-            "$ENV{HOME}/.steam/steam/steamapps/common/Team Fortress 2/bin/linux64")
+            "$ENV{HOME}/.steam/steam/steamapps/common/Team Fortress 2/bin/linux64"
+            "$ENV{HOME}/.steam/root/steamapps/common/Team Fortress 2/bin/linux64"
+            "$ENV{HOME}/.var/app/com.valvesoftware.Steam/.local/share/Steam/steamapps/common/Team Fortress 2/bin/linux64"
+            "$ENV{HOME}/.var/app/com.valvesoftware.Steam/.steam/steam/steamapps/common/Team Fortress 2/bin/linux64")
         if(EXISTS "${_tf2_candidate}/libtier0.so")
             set(TF2_LINUX64_DIR "${_tf2_candidate}" CACHE PATH "TF2 linux64 binary directory for libtier0/libvstdlib" FORCE)
             break()

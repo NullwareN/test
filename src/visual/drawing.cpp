@@ -67,6 +67,18 @@ void DrawStrings()
 
     for (size_t i = 0; i < side_strings_count; ++i)
     {
+        if (i == 0 && side_strings[0] == "cathook in Dev")
+        {
+            float sx{ 0.0f }, sy{ 0.0f };
+            fonts::center_screen->stringSize(side_strings[0], &sx, &sy);
+            if (sy <= 0.0f)
+                sy = (float)fonts::center_screen->size;
+            draw::Rectangle(5, y - 2, sx + 6, sy + 4, colors::Transparent(colors::black, 0.6f));
+            draw::RectangleOutlined(5, y - 2, sx + 6, sy + 4, side_strings_colors[0], 1.0f);
+            draw::String(8, y, side_strings_colors[i], side_strings[i].c_str(), *fonts::center_screen);
+            y += fonts::center_screen->size + 5;
+            continue;
+        }
         draw::String(8, y, side_strings_colors[i], side_strings[i].c_str(), *fonts::center_screen);
         y += fonts::center_screen->size + 1;
     }
